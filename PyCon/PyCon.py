@@ -1,4 +1,4 @@
-import pygame, os, sys
+import pygame
 import Settings
 import Color
 from string import ascii_letters
@@ -17,8 +17,9 @@ re_is_assign = re.compile(r'[$](?P<name>[a-zA-Z_]+\S*)\s*[=]\s*(?P<value>.+)')
 re_is_comment =  re.compile(r'\s*#.*')
 re_is_var = re.compile(r'^[$][a-zA-Z_]+\w*\Z')
 
+
 class PyCon:
-    def __init__(self, screen, rect, functions = {}, key_calls = {}, vars = {}, syntax = {}):
+    def __init__(self, screen, rect, functions={}, key_calls={}, vari={}, syntax={}):
         print("Console created")
         self.motd = ["[PyCon 0.1]"]
         self.bg_color = Color.Black
@@ -72,13 +73,17 @@ class PyCon:
         self.txt_layer = pygame.Surface(self.size)
         self.txt_layer.set_colorkey(self.bg_color)
 
-        self.func_calls = {}
-        self.key_calls = {}
-        self.add_functions_calls({"help": self.help})
-        self.add_functions_calls(functions)
-        self.add_key_calls(key_calls)
+        pygame.key.set_repeat(*self.repeat_rate)
 
-        self.user_vars = vars
+        self.key_calls = {}
+        self.add_key_calls = ({"l": self.clear, "c": self.clear_input, "w": self.set_active})
+        # self.add_key_calls(key_calls)
+
+        self.func_calls = {}
+        self.add_functions_calls({"help": self.help, "echo": self.output, "clear": self.clear})
+        self.add_functions_calls(functions)
+
+        self.user_vars = vari
         self.user_syntax = syntax
         self.user_namespace = {}
 
@@ -88,7 +93,7 @@ class PyCon:
 
     def add_key_calls(self, functions):
         if isinstance(functions, dict):
-            self.func_calls.update(functions)
+            self.key_calls.update(functions)
 
     def output(self, text):
         self.changed = True
@@ -231,35 +236,26 @@ class PyCon:
                         self.c_in = self.str_insert(self.c_in, char)
 
     def safe_set_attr(self, name, value):
-        '''\
-        Safely set the console variables
-        '''
         if name in self.variables:
             if isinstance(value, self.variables[name]) or not self.variables[name]:
                 self.__dict__[name] = value
 
     def setvar(self, name, value):
-        '''\
-        Sets the value of a variable
-        '''
-        if name in self.user_vars or not name in self.__dict__:
+        if name in self.user_vars or name not in self.__dict__:
             self.user_vars.update({name: value})
             self.user_namespace.update(self.user_vars)
         elif name in self.__dict__:
             self.__dict__.update({name: value})
 
     def getvar(self, name):
-        '''\
-        Gets the value of a variable, this is useful for people that want to access console variables from within their game
-        '''
-        if name in self.user_vars or not name in self.__dict__:
+        if name in self.user_vars or name not in self.__dict__:
             return self.user_vars[name]
         elif name in self.__dict__:
             return self.__dict__[name]
 
-    def setvars(self, vars):
+    def setvars(self, vari):
         try:
-            self.user_vars.update(vars)
+            self.user_vars.update(vari)
             self.user_namespace.update(self.user_vars)
         except TypeError:
             self.output("setvars requires a dictionary")
@@ -271,12 +267,9 @@ class PyCon:
             return self.user_vars
 
     def send_pyconsole(self, text):
-        '''\
-        Sends input to pyconsole to be interpreted
-        '''
         if not text:  # Output a blank row if nothing is entered
             self.output("")
-            return;
+            return
 
         self.add_to_history(text)
 
@@ -289,7 +282,7 @@ class PyCon:
         else:
             tokens = self.tokenize(text)
 
-        if tokens == None:
+        if tokens is None:
             return
 
         # Evaluate
@@ -308,16 +301,13 @@ class PyCon:
                 if assign:
                     self.setvar(assign.group('name'), out)
 
-            if not out == None:
+            if not out is None:
                 self.output(out)
         except (KeyError, TypeError):
             self.output("Unknown Command: " + str(tokens[0]))
             self.output(r'Type "help" for a list of commands.')
 
     def convert_token(self, tok):
-        '''\
-        Convert a token to its proper type
-        '''
         tok = tok.strip("$")
         try:
             tmp = eval(tok, self.__dict__, self.user_namespace)
@@ -336,16 +326,13 @@ class PyCon:
             return tmp
 
     def tokenize(self, s):
-        '''\
-        Tokenize input line, convert tokens to proper types
-        '''
         if re_is_comment.match(s):
             return [s]
 
-        for re in self.user_syntax:
-            group = re.match(s)
+        for r in self.user_syntax:
+            group = r.match(s)
             if group:
-                self.user_syntax[re](self, group)
+                self.user_syntax[r](self, group)
                 return
 
         tokens = re_token.findall(s)
@@ -378,19 +365,16 @@ class PyCon:
             i += t_count + 1
         return cmd
 
+    def clear(self):
+        self.c_out = ["[Screen Cleared]"]
+        self.c_scroll = 0
+
     def help(self, *args):
-        '''\
-        Output information about functions
-        Arguments:
-           args -- arbitrary argument list of function names
-             |- No Args - A list of available functions will be displayed
-             |- One or more Args - Docstring of each function will be displayed
-        '''
         if args:
             items = [(i, self.func_calls[i]) for i in args if i in self.func_calls]
             for i, v in items:
-                out = i + ": Takes %d arguments. " % (v.func_code.co_argcount - (v.func_code.co_varnames[0] is "self"))
-                doc = v.func_doc
+                out = i + ": Takes %d arguments. " % (v.__code__.co_argcount - (v.__code__.co_varnames[0] is "self"))
+                doc = v.__doc__
                 if doc:
                     out += textwrap.dedent(doc)
                 tmp_indent = self.txt_wrapper.subsequent_indent
@@ -402,15 +386,18 @@ class PyCon:
             self.output(out)
             self.output(r'Type "help command-name" for more information on that command')
 
+
 class ParseError(Exception):
     def __init__(self, token):
         self.token = token
+
     def at_token(self):
         return self.token
 
+
 def balanced(t):
     stack = []
-    pairs = {"\'":"\'", '\"':'\"', "{":"}", "[":"]", "(":")"}
+    pairs = {"\'": "\'", '\"': '\"', "{": "}", "[": "]", "(": ")"}
     for char in t:
         if stack and char == pairs[stack[-1]]:
             stack.pop()

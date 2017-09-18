@@ -5,6 +5,7 @@ import Config
 import PyCon
 import Color
 
+
 class Game:
     # Initialise The Game
     def __init__(self):
@@ -14,7 +15,9 @@ class Game:
         # Generate a Screen to Display stuff
         self.screen = pygame.display.set_mode((Settings.ScreenWidth, Settings.ScreenHeight), pygame.RESIZABLE)
         # Initialise the CMD Console
-        self.console = PyCon.PyCon(self.screen, (0, 0, Settings.ScreenWidth, 200))
+        self.console = PyCon.PyCon(self.screen,
+                                   (0, 0, Settings.ScreenWidth, 200)
+                                   )
         # Initialise the Clock to limit the Gamespeed
         self.clock = pygame.time.Clock()
         # Is the Game running
