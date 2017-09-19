@@ -39,7 +39,7 @@ class PyCon:
         self.ps1 = "] "
         self.ps2 = ">>> "
         self.ps3 = "... "
-        self.c_ps = self.ps2
+        self.c_ps = self.ps3
 
         self.c_out = self.motd
         self.c_in = ""
@@ -66,10 +66,12 @@ class PyCon:
         self.rect = pygame.Rect(rect)
         self.size = self.rect.size
 
+        self.var_display_width = self.size[0] - self.size[0] / 4
+
         self.font = pygame.font.Font(System_font, 14)
         self.font_height = self.font.get_linesize()
         self.max_lines = int((self.size[1] / self.font_height) - 1)
-        self.max_chars = int((self.size[0] / (self.font.size(ascii_letters)[0]/len(ascii_letters))) - 1)
+        self.max_chars = int(((self.size[0] - (self.size[0] - self.var_display_width)) / (self.font.size(ascii_letters)[0]/len(ascii_letters))) - 1)
         self.txt_wrapper = textwrap.TextWrapper()
 
         self.bg_layer = pygame.Surface(self.size)
@@ -80,8 +82,8 @@ class PyCon:
         pygame.key.set_repeat(*self.repeat_rate)
 
         self.key_calls = {}
-        self.add_key_calls = ({"l": self.clear, "c": self.clear_input, "w": self.set_active})
-        # self.add_key_calls(key_calls)
+        self.add_key_calls({"l": self.clear, "c": self.clear_input, "w": self.set_active})
+        self.add_key_calls(key_calls)
 
         self.func_calls = {}
         self.add_functions_calls({"help": self.help, "echo": self.output, "clear": self.clear})
@@ -174,9 +176,7 @@ class PyCon:
             self.bg_layer.fill(self.bg_color)
             self.bg_layer.blit(self.txt_layer, (0, 0, 0, 0))
 
-        pygame.draw.rect(self.parent_screen, self.txt_color_i,
-                         (self.rect.x - 1, self.rect.y - 1,
-                          self.size[0] + 2, self.size[1] + 2), 1)
+        pygame.draw.line(self.parent_screen, self.txt_color_i,(self.var_display_width,0),(self.var_display_width,self.size[1]),2)
         self.parent_screen.blit(self.bg_layer, self.rect)
 
     def process_input(self, eventlist):

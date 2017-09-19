@@ -6,10 +6,9 @@ import PyCon
 # How big should the Window be???
 ScreenWidth = 1024
 ScreenHeight = 768
-# Fullscreen?
-Fullscreen = False
+ScreenSize = (ScreenWidth, ScreenHeight)
 # How fast should the Game run?
-FPS = 30
+FPS = 60
 
 
 class Game:
@@ -19,36 +18,34 @@ class Game:
         pygame.init()
         # Generate a Screen to Display stuff
         self.screen = pygame.display.set_mode((ScreenWidth, ScreenHeight), pygame.RESIZABLE)
-        # Initialise the CMD Console
-        self.console = PyCon.PyCon(self.screen,
-                                   (0, 0, ScreenWidth, 200)
-                                   )
         # Initialise the Clock to limit the Gamespeed
         self.clock = pygame.time.Clock()
         # Is the Game running
         self.running = True
-
-    # Generates an new Game
-    # Must reset Variables and stuff
-    def new(self):
-        self.run()
+        # Initialise the CMD Console
+        self.console = PyCon.PyCon(self.screen,
+                                   (0, 0, ScreenWidth, 200),
+                                   functions={"fps": self.get_fps, "size": self.get_screen_dimensions},
+                                   key_calls={},
+                                   vari={"A": 100, "B": 200, "C": 300},
+                                   syntax={}
+                                   )
 
     # The Whole Game
     # Does it need anything else?
     def run(self):
         # THE GAMELOOP
         while self.running:
-            #self.clock.tick(FPS)
+            self.clock.tick(FPS)
             eventlist = pygame.event.get()
             self.screen.fill((255, 255, 255))
-
             self.console.process_input(eventlist)
             self.events(eventlist)
             self.console.draw()
-
             pygame.display.flip()
         # Close the Game
-        self.close()
+        pygame.quit()
+        sys.exit()
 
     # The Events, like Key pressed and stuff
     def events(self, eventlist):
@@ -61,11 +58,13 @@ class Game:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
 
-    # Close The Game
-    def close(self):
-        # Shutdown Pygame and Sys
-        pygame.quit()
-        sys.exit()
+    def get_fps(self):
+        """ Shows the FPS """
+        return self.clock.get_fps()
+
+    def get_screen_dimensions(self):
+        """ Shows Window Resolution"""
+        return ScreenSize
 
 if __name__ == "__main__":
     game = Game()
