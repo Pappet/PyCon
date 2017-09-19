@@ -1,6 +1,4 @@
 import pygame
-import Settings
-import Color
 from string import ascii_letters
 import textwrap
 import re
@@ -17,15 +15,21 @@ re_is_assign = re.compile(r'[$](?P<name>[a-zA-Z_]+\S*)\s*[=]\s*(?P<value>.+)')
 re_is_comment =  re.compile(r'\s*#.*')
 re_is_var = re.compile(r'^[$][a-zA-Z_]+\w*\Z')
 
+# Which Font do you want to use for the Console
+System_font = "Fonts\TerminalVector_edited.ttf"
+# Colors
+Black = (0, 0, 0)
+Green = (0, 255, 0)
+DarkGreen = (0, 153, 0)
 
 class PyCon:
     def __init__(self, screen, rect, functions={}, key_calls={}, vari={}, syntax={}):
         print("Console created")
         self.motd = ["[PyCon 0.1]"]
-        self.bg_color = Color.Black
+        self.bg_color = Black
         self.bg_alpha = 150
-        self.txt_color_i = Color.Green
-        self.txt_color_o = Color.DarkGreen
+        self.txt_color_i = Green
+        self.txt_color_o = DarkGreen
 
         self.changed = True
         self.active = False
@@ -62,7 +66,7 @@ class PyCon:
         self.rect = pygame.Rect(rect)
         self.size = self.rect.size
 
-        self.font = pygame.font.Font(Settings.System_font, 14)
+        self.font = pygame.font.Font(System_font, 14)
         self.font_height = self.font.get_linesize()
         self.max_lines = int((self.size[1] / self.font_height) - 1)
         self.max_chars = int((self.size[0] / (self.font.size(ascii_letters)[0]/len(ascii_letters))) - 1)

@@ -1,9 +1,15 @@
 import pygame
 import sys
-import Settings
-import Config
 import PyCon
-import Color
+
+# SETTINGS
+# How big should the Window be???
+ScreenWidth = 1024
+ScreenHeight = 768
+# Fullscreen?
+Fullscreen = False
+# How fast should the Game run?
+FPS = 30
 
 
 class Game:
@@ -11,12 +17,11 @@ class Game:
     def __init__(self):
         # Initialise Pygame and the Sound Mixer
         pygame.init()
-        Config.Read()
         # Generate a Screen to Display stuff
-        self.screen = pygame.display.set_mode((Settings.ScreenWidth, Settings.ScreenHeight), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode((ScreenWidth, ScreenHeight), pygame.RESIZABLE)
         # Initialise the CMD Console
         self.console = PyCon.PyCon(self.screen,
-                                   (0, 0, Settings.ScreenWidth, 200)
+                                   (0, 0, ScreenWidth, 200)
                                    )
         # Initialise the Clock to limit the Gamespeed
         self.clock = pygame.time.Clock()
@@ -33,19 +38,17 @@ class Game:
     def run(self):
         # THE GAMELOOP
         while self.running:
+            #self.clock.tick(FPS)
             eventlist = pygame.event.get()
-            self.screen.fill(Color.White)
-            self.clock.tick(Settings.FPS)
+            self.screen.fill((255, 255, 255))
+
             self.console.process_input(eventlist)
             self.events(eventlist)
-            self.update()
             self.console.draw()
+
             pygame.display.flip()
         # Close the Game
         self.close()
-
-    def update(self):
-        pass
 
     # The Events, like Key pressed and stuff
     def events(self, eventlist):
@@ -60,8 +63,6 @@ class Game:
 
     # Close The Game
     def close(self):
-        print("Quit")
-        Config.Write()
         # Shutdown Pygame and Sys
         pygame.quit()
         sys.exit()
