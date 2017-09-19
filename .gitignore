@@ -28,7 +28,7 @@ wheels/
 # File-based project format:
 *.iws
 
-*.idea
+*/.idea
 
 # User-specific stuff:
 .idea/**/workspace.xml
