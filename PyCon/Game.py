@@ -25,7 +25,12 @@ class Game:
         # Initialise the CMD Console
         self.console = PyCon.PyCon(self.screen,
                                    (0, 0, ScreenWidth, 200),
-                                   functions={"fps": self.get_fps, "size": self.get_screen_dimensions},
+                                   functions={"fps": self.get_fps,
+                                              "size": self.get_screen_dimensions,
+                                              "add": self.add,
+                                              "draw": self.draw,
+                                              "shutdown": self.shutdown
+                                              },
                                    key_calls={},
                                    vari={"A": 100, "B": 200, "C": 300},
                                    syntax={}
@@ -44,6 +49,7 @@ class Game:
             self.console.draw()
             pygame.display.flip()
         # Close the Game
+        self.console.write_history_to_file()
         pygame.quit()
         sys.exit()
 
@@ -58,6 +64,7 @@ class Game:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
 
+    # Test Functions for the communication with the console!
     def get_fps(self):
         """ Shows the FPS """
         return self.clock.get_fps()
@@ -65,6 +72,19 @@ class Game:
     def get_screen_dimensions(self):
         """ Shows Window Resolution"""
         return ScreenSize
+
+    def shutdown(self):
+        """CAVE: Shuts the Game Down!!!"""
+        self.running = False
+
+    def add(self, a, b):
+        """Simple add Function "add a b "
+        """
+        return a + b
+
+    def draw(self, a, b, c):
+        """ Simple draw circle Function "draw 400 400 100" """
+        return pygame.draw.circle(pygame.display.get_surface(),(0,0,255),(a,b), c, 1)
 
 if __name__ == "__main__":
     game = Game()

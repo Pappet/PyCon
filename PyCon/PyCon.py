@@ -16,7 +16,7 @@ re_is_comment =  re.compile(r'\s*#.*')
 re_is_var = re.compile(r'^[$][a-zA-Z_]+\w*\Z')
 
 # Which Font do you want to use for the Console
-System_font = "Fonts\TerminalVector_edited.ttf"
+sys_font = "Fonts\TerminalVector_edited.ttf"
 # Colors
 Black = (0, 0, 0)
 Green = (0, 255, 0)
@@ -68,7 +68,7 @@ class PyCon:
 
         self.var_display_width = self.size[0] - self.size[0] / 4
 
-        self.font = pygame.font.Font(System_font, 14)
+        self.font = pygame.font.Font(sys_font, 14)
         self.font_height = self.font.get_linesize()
         self.max_lines = int((self.size[1] / self.font_height) - 1)
         self.max_chars = int(((self.size[0] - (self.size[0] - self.var_display_width)) / (self.font.size(ascii_letters)[0]/len(ascii_letters))) - 1)
@@ -92,6 +92,9 @@ class PyCon:
         self.user_vars = vari
         self.user_syntax = syntax
         self.user_namespace = {}
+
+    def screen(self):
+        return self.parent_screen
 
     def add_functions_calls(self, functions):
         if isinstance(functions, dict):
@@ -305,7 +308,7 @@ class PyCon:
                 if assign:
                     self.setvar(assign.group('name'), out)
 
-            if not out is None:
+            if out is not None:
                 self.output(out)
         except (KeyError, TypeError):
             self.output("Unknown Command: " + str(tokens[0]))
@@ -389,6 +392,11 @@ class PyCon:
             out = "Available commands: " + str(self.func_calls.keys()).strip("[]")
             self.output(out)
             self.output(r'Type "help command-name" for more information on that command')
+
+    def write_history_to_file(self):
+        hist_file = open("History.txt", "w")
+        for item_h in self.c_out:#self.c_hist:
+            hist_file.write("%s\n" % item_h)
 
 
 class ParseError(Exception):
