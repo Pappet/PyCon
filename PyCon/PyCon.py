@@ -21,10 +21,10 @@ class PyCon:
     def __init__(self, screen, rect, functions=None, key_calls=None, vari=None, syntax=None):
         self.message_of_the_day = ["[PyCon 0.2] A Console for your Game!"]
 
-        self.bg_color = (0, 0, 0)  # Black
-        self.bg_alpha = 150
-        self.txt_color_i = (0, 255, 0)  # Green
-        self.txt_color_o = (0, 153, 0)  # Dark Green
+        self.bg_color = (0, 25, 0)      # Blackish Green Background
+        self.bg_alpha = 150             # How transparent is the Console Background
+        self.txt_color_i = (0, 255, 0)  # Green bright Input Color
+        self.txt_color_o = (0, 153, 0)  # Dark Green output Color
 
         self.changed = True
         self.active = False
