@@ -105,6 +105,7 @@ class PyCon:
             self.key_calls.update(functions)
 
     def output(self, text):
+        """Print a string on the Console. Use: echo "Test Test Test" """
         self.changed = True
         if not isinstance(text, str):
             text = str(text)
@@ -373,6 +374,7 @@ class PyCon:
         return cmd
 
     def clear(self):
+        """Clear the screen! Use: clear"""
         self.c_out = ["[Screen Cleared]"]
         self.c_scroll = 0
 
@@ -394,9 +396,15 @@ class PyCon:
             self.output(r'Type "help command-name" for more information on that command')
 
     def write_history_to_file(self):
-        hist_file = open("History.txt", "w")
-        for item_h in self.c_out:#self.c_hist:
-            hist_file.write("%s\n" % item_h)
+        hist_file_text = open("History_text.txt", "w")
+        for item_h in self.c_out:
+            hist_file_text.write("%s\n" % item_h)
+        hist_file_text.close()
+
+        hist_file_cmd = open("History_cmd.txt", "w")
+        for item_h in self.c_hist:
+            hist_file_cmd.write("%s\n" % item_h)
+        hist_file_cmd.close()
 
 
 class ParseError(Exception):

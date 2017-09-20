@@ -66,24 +66,23 @@ class Game:
 
     # Test Functions for the communication with the console!
     def get_fps(self):
-        """ Shows the FPS """
+        """ Shows the FPS! Use: fps"""
         return self.clock.get_fps()
 
     def get_screen_dimensions(self):
-        """ Shows Window Resolution"""
+        """ Shows Window Resolution! Use: size"""
         return ScreenSize
 
     def shutdown(self):
-        """CAVE: Shuts the Game Down!!!"""
+        """CAVE: Shuts the Game Down!!! Use: shutdown"""
         self.running = False
 
     def add(self, a, b):
-        """Simple add Function "add a b "
-        """
+        """Simple add Function! Use: add a b"""
         return a + b
 
     def draw(self, a, b, c):
-        """ Simple draw circle Function "draw 400 400 100" """
+        """ Simple draw circle Function! Use: draw 400 400 100"""
         return pygame.draw.circle(pygame.display.get_surface(),(0,0,255),(a,b), c, 1)
 
 if __name__ == "__main__":
