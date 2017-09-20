@@ -110,10 +110,6 @@ class Game:
         decimal.getcontext().prec -= 2
         return +s  # unary plus applies the new precision
 
-if __name__ == "__main__":
-    game = Game()
-    game.run()
-
 # # # # # # # # # # # # # # # # # #
 # Another Example, this one       #
 # lets you call functions like:   #
@@ -135,3 +131,7 @@ def console_func(console, match):
         console.output(strerror)
     else:
         console.output(out)
+
+if __name__ == "__main__":
+    game = Game()
+    game.run()
