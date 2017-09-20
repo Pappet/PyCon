@@ -3,33 +3,28 @@ from string import ascii_letters
 import textwrap
 import re
 
+# I dont know what this means???
 re_token = re.compile(r"""[\"].*?[\"]|[\{].*?[\}]|[\(].*?[\)]|[\[].*?[\]]|\S+""")
 re_is_list = re.compile(r'^[{\[(]')
 re_is_number = re.compile(r"""
-						(?x)
-						[-]?[0][x][0-9a-fA-F]+[lLjJ]? | 	#  Hexadecimal
-						[-]?[0][0-7]+[lLjJ]? |				#  Octal
-						[-]?[\d]+(?:[.][\d]*)?[lLjJ]?		#  Decimal (Int or float)
-						""")
+(?x)
+[-]?[0][x][0-9a-fA-F]+[lLjJ]? | 	#  Hexadecimal
+[-]?[0][0-7]+[lLjJ]? |				#  Octal
+[-]?[\d]+(?:[.][\d]*)?[lLjJ]?		#  Decimal (Int or float)
+""")
 re_is_assign = re.compile(r'[$](?P<name>[a-zA-Z_]+\S*)\s*[=]\s*(?P<value>.+)')
-re_is_comment =  re.compile(r'\s*#.*')
+re_is_comment = re.compile(r'\s*#.*')
 re_is_var = re.compile(r'^[$][a-zA-Z_]+\w*\Z')
 
-# Which Font do you want to use for the Console
-sys_font = "Fonts\TerminalVector_edited.ttf"
-# Colors
-Black = (0, 0, 0)
-Green = (0, 255, 0)
-DarkGreen = (0, 153, 0)
 
 class PyCon:
-    def __init__(self, screen, rect, functions={}, key_calls={}, vari={}, syntax={}):
-        print("Console created")
-        self.motd = ["[PyCon 0.1]"]
-        self.bg_color = Black
+    def __init__(self, screen, rect, functions=None, key_calls=None, vari=None, syntax=None):
+        self.message_of_the_day = ["[PyCon 0.2] A Console for your Game!"]
+
+        self.bg_color = (0, 0, 0)  # Black
         self.bg_alpha = 150
-        self.txt_color_i = Green
-        self.txt_color_o = DarkGreen
+        self.txt_color_i = (0, 255, 0)  # Green
+        self.txt_color_o = (0, 153, 0)  # Dark Green
 
         self.changed = True
         self.active = False
@@ -39,9 +34,9 @@ class PyCon:
         self.ps1 = "] "
         self.ps2 = ">>> "
         self.ps3 = "... "
-        self.c_ps = self.ps3
+        self.c_ps = self.ps2
 
-        self.c_out = self.motd
+        self.c_out = self.message_of_the_day
         self.c_in = ""
         self.c_hist = [""]
         self.c_hist_pos = 0
@@ -49,29 +44,14 @@ class PyCon:
         self.c_draw_pos = 0
         self.c_scroll = 0
 
-        self.variables = {"bg_alpha": int,
-                          "bg_color": list,
-                          "txt_color_i": list,
-                          "txt_color_o": list,
-                          "ps1": str,
-                          "ps2": str,
-                          "ps3": str,
-                          "active": bool,
-                          "repeat_rate": list,
-                          "preserve_events": bool,
-                          "motd": list
-                          }
-
         self.parent_screen = screen
         self.rect = pygame.Rect(rect)
         self.size = self.rect.size
 
-        self.var_display_width = self.size[0] - self.size[0] / 4
-
-        self.font = pygame.font.Font(sys_font, 14)
+        self.font = pygame.font.SysFont("Courier New", 14)
         self.font_height = self.font.get_linesize()
         self.max_lines = int((self.size[1] / self.font_height) - 1)
-        self.max_chars = int(((self.size[0] - (self.size[0] - self.var_display_width)) / (self.font.size(ascii_letters)[0]/len(ascii_letters))) - 1)
+        self.max_chars = int(((self.size[0]) / (self.font.size(ascii_letters)[0]/len(ascii_letters))) - 1)
         self.txt_wrapper = textwrap.TextWrapper()
 
         self.bg_layer = pygame.Surface(self.size)
@@ -82,16 +62,16 @@ class PyCon:
         pygame.key.set_repeat(*self.repeat_rate)
 
         self.key_calls = {}
-        self.add_key_calls({"l": self.clear, "c": self.clear_input, "w": self.set_active})
-        self.add_key_calls(key_calls)
-
         self.func_calls = {}
-        self.add_functions_calls({"help": self.help, "echo": self.output, "clear": self.clear})
-        self.add_functions_calls(functions)
-
         self.user_vars = vari
         self.user_syntax = syntax
         self.user_namespace = {}
+
+        self.add_key_calls({"l": self.clear, "c": self.clear_input, "w": self.set_active})
+        self.add_key_calls(key_calls)
+
+        self.add_functions_calls({"help": self.help, "echo": self.output, "clear": self.clear})
+        self.add_functions_calls(functions)
 
     def screen(self):
         return self.parent_screen
@@ -180,7 +160,6 @@ class PyCon:
             self.bg_layer.fill(self.bg_color)
             self.bg_layer.blit(self.txt_layer, (0, 0, 0, 0))
 
-        pygame.draw.line(self.parent_screen, self.txt_color_i,(self.var_display_width,0),(self.var_display_width,self.size[1]),2)
         self.parent_screen.blit(self.bg_layer, self.rect)
 
     def process_input(self, eventlist):
@@ -243,37 +222,6 @@ class PyCon:
                         char = str(event.unicode)
                         self.c_in = self.str_insert(self.c_in, char)
 
-    def safe_set_attr(self, name, value):
-        if name in self.variables:
-            if isinstance(value, self.variables[name]) or not self.variables[name]:
-                self.__dict__[name] = value
-
-    def setvar(self, name, value):
-        if name in self.user_vars or name not in self.__dict__:
-            self.user_vars.update({name: value})
-            self.user_namespace.update(self.user_vars)
-        elif name in self.__dict__:
-            self.__dict__.update({name: value})
-
-    def getvar(self, name):
-        if name in self.user_vars or name not in self.__dict__:
-            return self.user_vars[name]
-        elif name in self.__dict__:
-            return self.__dict__[name]
-
-    def setvars(self, vari):
-        try:
-            self.user_vars.update(vari)
-            self.user_namespace.update(self.user_vars)
-        except TypeError:
-            self.output("setvars requires a dictionary")
-
-    def getvars(self, opt_dict=None):
-        if opt_dict:
-            opt_dict.update(self.user_vars)
-        else:
-            return self.user_vars
-
     def send_pyconsole(self, text):
         if not text:  # Output a blank row if nothing is entered
             self.output("")
@@ -314,6 +262,14 @@ class PyCon:
         except (KeyError, TypeError):
             self.output("Unknown Command: " + str(tokens[0]))
             self.output(r'Type "help" for a list of commands.')
+
+    def setvar(self, name, value):
+        """Sets the value of a variable"""
+        if name in self.user_vars or name not in self.__dict__:
+            self.user_vars.update({name: value})
+            self.user_namespace.update(self.user_vars)
+        elif name in self.__dict__:
+            self.__dict__.update({name: value})
 
     def convert_token(self, tok):
         tok = tok.strip("$")
